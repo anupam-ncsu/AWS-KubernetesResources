@@ -1,4 +1,4 @@
-# Istio - an introduction to service mesh
+# Istio - An Introduction to service mesh and its dashboard
 
 ![CARTOON](/_temp/istio-header.jpeg)
 
@@ -58,18 +58,20 @@ export PATH=$PWD/bin:$PATH
 
 ### Configure Istio
 For this blog, we will apply the **demo** configuration profiles.  
-The profiles provide customization of the Istio control plane and of the sidecars for the Istio data plane. You can start with one of Istio’s built-in configuration profiles and then further customize the configuration for your specific needs. 
+The profiles provide customization of the Istio control plane and of the sidecars for the Istio data plane. You can start with one of Istio’s built-in [configuration profiles](https://istio.io/docs/setup/additional-setup/config-profiles/) and then further customize the configuration for your specific needs. 
+
+For this demo, please fork the files from [here](https://github.com/anupam-ncsu/AWS-KubernetesResources/tree/master/Istio/manifest)
 
 ```
 istioctl manifest apply --set profile=demo
 ```
-- Add a namespace label to instruct Istio to automatically inject Envoy sidecar proxies when you deploy your application later. In this case, every app that gets deployed to **namespace : dev** will have istio enabled.
+- Add a [namespace](https://github.com/anupam-ncsu/AWS-KubernetesResources/blob/master/Istio/manifest/namespace-dev.yaml) label to instruct Istio to automatically inject Envoy sidecar proxies when you deploy your application later. In this case, every app that gets deployed to **namespace : dev** will have istio enabled.
 ```
 kubectl apply - f manifest/namespace-dev.yaml
 kubectl label namespace dev istio-injection=enabled
 ```
 ### Deploy Applications
-#### For simplicity, we will use the famous bokkinfo sample published by the istio team with minor modifications 
+For simplicity, we will use the famous [bookinfo sample published by the istio team with minor modifications.](https://github.com/anupam-ncsu/AWS-KubernetesResources/blob/master/Istio/manifest/bookinginfo-dev.yaml)
 ```
 kubectl apply -f manifest/bookinginfo-dev.yaml
 ```
@@ -89,7 +91,8 @@ kubectl exec -it $(kubectl get pod -l app=ratings -n dev -o jsonpath='{.items[0]
 ```
 ### Istio Ingress: Open application to traffic
 The Bookinfo application is deployed but not accessible from the outside.   
-To make it accessible, you need to create an Istio Ingress Gateway, which maps a path to a route at the edge of your mesh. Gateway configurations are applied to standalone Envoy proxies that are running at the edge of the mesh, rather than sidecar Envoy proxies running alongside your service workloads.  
+
+To make it accessible, you need to create an [Istio Ingress Gateway](https://github.com/anupam-ncsu/AWS-KubernetesResources/blob/master/Istio/manifest/bookinginfo-ingress.yaml), which maps a path to a route at the edge of your mesh. Gateway configurations are applied to standalone Envoy proxies that are running at the edge of the mesh, rather than sidecar Envoy proxies running alongside your service workloads.  
 Gateway configurations are applied to standalone Envoy proxies that are running at the edge of the mesh, rather than sidecar Envoy proxies running alongside your service workloads. Unlike other mechanisms for controlling traffic entering your systems, such as the Kubernetes Ingress APIs, Istio gateways let you use the full power and flexibility of Istio’s traffic routing. You can do this because Istio’s Gateway resource just lets you configure layer 4-6 load balancing properties such as ports to expose, TLS settings, and so on. Then instead of adding application-layer traffic routing (L7) to the same API resource, you bind a regular Istio virtual service to the gateway. This lets you basically manage gateway traffic like any other data plane traffic in an Istio mesh.
 
 ```
@@ -126,5 +129,4 @@ the visualization is simple to understand and debug.
 
 ![CARTOON](/_temp/kiali.png)
 
-Notice, that we linked only to the product page through the ingress virtual service. The Rest of the mesh is connected through their own service definitions. 
-Please check the github for the details.
+Notice, that we linked only to the product page through the ingress virtual service. The Rest of the mesh is connected through their own service definitions.
